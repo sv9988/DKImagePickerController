@@ -256,7 +256,8 @@ open class DKAssetGroupDetailVC: UIViewController,
         if !self.hidesCamera && index == 0 {
             return nil
         }
-        assetIndex = (index - (self.hidesCamera ? 0 : 1) - self.existImages.count)
+        assetIndex = index - (self.hidesCamera ? 0 : 1)
+        assetIndex = assetIndex - self.existImages.count
 
         guard let group = imagePickerController?.groupDataManager.fetchGroup(with: selectedGroupId) else {
             assertionFailure("Expect group")

@@ -9,6 +9,7 @@
 import UIKit
 import AVFoundation
 import Photos
+import SDWebImage
 
 private extension UICollectionView {
 
@@ -52,6 +53,8 @@ open class DKAssetGroupDetailVC: UIViewController,
     private var registeredCellIdentifiers = Set<String>()
     private var thumbnailSize = CGSize.zero
 
+    public var existImages : [String] = ["https://tuongtac.thuathienhue.gov.vn/demo/uploadfiles/phananh/2019/04/271.jpg"]
+    
     override open func viewDidLoad() {
         super.viewDidLoad()
 
@@ -526,6 +529,30 @@ open class DKAssetGroupDetailVC: UIViewController,
 
         return cell
     }
+    
+    func dequeueExistImageReusableCell(for indexPath: IndexPath) -> DKAssetGroupDetailBaseCell {
+        guard let imagePickerController = imagePickerController else {
+            assertionFailure("Expect imagePickerController")
+            return DKAssetGroupDetailBaseCell()
+        }
+        let cameraCnt = self.hidesCamera ? 0 : 1
+        let index_ = indexPath.row - cameraCnt
+        let imageStr = self.existImages[index_]
+        let cellClass = imagePickerController.UIDelegate.imagePickerControllerCollectionImageCell()
+        
+        registerCellIfNeeded(cellClass: cellClass)
+        
+        guard let cell = collectionView?.dequeueReusableCell(withReuseIdentifier: cellClass.cellReuseIdentifier(),
+                                                             for: indexPath) as? DKAssetGroupDetailBaseCell else
+        {
+            assertionFailure("Expect DKAssetGroupDetailBaseCell")
+            return DKAssetGroupDetailBaseCell()
+        }
+        
+        self.setupExistImage(assetCell: cell, for: indexPath, with: imageStr)
+        
+        return cell
+    }
 
     func dequeueReusableCameraCell(for indexPath: IndexPath) -> DKAssetGroupDetailBaseCell {
         guard let imagePickerController = imagePickerController else {
@@ -567,6 +594,27 @@ open class DKAssetGroupDetailVC: UIViewController,
             strongSelf.showGallery(from: strongCell)
         }
 	}
+    
+    func setupExistImage(assetCell cell: DKAssetGroupDetailBaseCell, for indexPath: IndexPath, with imageStr: String) {
+        let tag = indexPath.row + 1
+        cell.tag = tag
+        
+        if self.thumbnailSize.equalTo(CGSize.zero), let layoutAttributes = self.collectionView?.collectionViewLayout.layoutAttributesForItem(at: indexPath) {
+            self.thumbnailSize = layoutAttributes.size.toPixel()
+        }
+        
+        cell.thumbnailImage = nil
+        
+        if let url = self.existImages[indexPath.row] as? String{
+            cell.thumbnailImageView.sd_setImage(with: URL.init(string: imageStr), completed: nil)
+        }
+        
+        cell.longPressBlock = { [weak self, weak cell] in
+            guard let strongSelf = self, let strongCell = cell else { return }
+            
+            strongSelf.showGallery(from: strongCell)
+        }
+    }
 
     // MARK: - UICollectionViewDelegate, UICollectionViewDataSource methods
 
@@ -577,14 +625,17 @@ open class DKAssetGroupDetailVC: UIViewController,
             assertionFailure("Expect group")
             return 0
         }
-        return group.totalCount + (self.hidesCamera ? 0 : 1)
+        return group.totalCount + (self.hidesCamera ? 0 : 1) + self.existImages.count
     }
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell: DKAssetGroupDetailBaseCell
+        let cameraCnt = self.hidesCamera ? 0 : 1
         if self.isCameraCell(indexPath: indexPath) {
             cell = self.dequeueReusableCameraCell(for: indexPath)
-        } else {
+        }else if(indexPath.row < self.existImages.count + cameraCnt){
+            cell = self.dequeueExistImageReusableCell(for: indexPath)
+        }else {
             cell = self.dequeueReusableCell(for: indexPath)
         }
 

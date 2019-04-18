@@ -598,14 +598,14 @@ open class DKAssetGroupDetailVC: UIViewController,
     func setupExistImage(assetCell cell: DKAssetGroupDetailBaseCell, for indexPath: IndexPath, with imageStr: String) {
         let tag = indexPath.row + 1
         cell.tag = tag
-        
+        let cameraCnt = self.hidesCamera ? 0 : 1
         if self.thumbnailSize.equalTo(CGSize.zero), let layoutAttributes = self.collectionView?.collectionViewLayout.layoutAttributesForItem(at: indexPath) {
             self.thumbnailSize = layoutAttributes.size.toPixel()
         }
         
         cell.thumbnailImage = nil
         
-        if let url = self.existImages[indexPath.row] as? String{
+        if let url = self.existImages[indexPath.row - cameraCnt] as? String{
             cell.thumbnailImageView.sd_setImage(with: URL.init(string: imageStr), completed: nil)
         }
         

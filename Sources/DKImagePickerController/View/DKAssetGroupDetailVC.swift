@@ -604,10 +604,8 @@ open class DKAssetGroupDetailVC: UIViewController,
         }
         
         cell.thumbnailImage = nil
-        
-        if let url = self.existImages[indexPath.row - cameraCnt] as? String{
-            cell.thumbnailImageView.sd_setImage(with: URL.init(string: imageStr), completed: nil)
-        }
+        let url = self.existImages[indexPath.row - cameraCnt]
+        cell.thumbnailImageView.sd_setImage(with: URL.init(string: imageStr), completed: nil)
         
         cell.longPressBlock = { [weak self, weak cell] in
             guard let strongSelf = self, let strongCell = cell else { return }
